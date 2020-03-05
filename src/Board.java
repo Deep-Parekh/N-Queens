@@ -9,17 +9,44 @@ import java.util.Random;
  */
 public class Board {
 
-	//private int[][] board;
-	private List<Queen> queens;
+	private byte[] state;
 	private int LENGTH;
 	private int attackingQueenPairs;	
 	private boolean attackingPairsSet;
 	
+	/*
+	 * Initializes a new random board
+	 */
 	public Board(int N) {
 		this.LENGTH = N;
-		//this.board = new int[LENGTH][LENGTH];
-		this.queens = new ArrayList<Queen>(LENGTH);
+		this.state = new byte[LENGTH];
 		this.attackingPairsSet = false;
+		this.randomState();
+		this.setAttackingQueenPairs();
+	}
+	
+	/*
+	 * Copies the board that was passed as a parameter
+	 */
+	public Board(Board b) {
+		this.LENGTH = b.getLength();
+		this.state = b.getState();
+		this.attackingPairsSet = false;
+		this.setAttackingQueenPairs();
+	}
+
+	public int getAttackingQueenPairs() {
+		if(!this.attackingPairsSet)
+			this.setAttackingQueenPairs();
+		return this.attackingQueenPairs;
+	}
+	
+	public int getLength() {
+		return this.LENGTH;
+	}
+	
+	public byte[] getState(){
+		return this.state;
 	}
 	
 	public boolean isGoal() {
@@ -31,81 +58,55 @@ public class Board {
 	public void randomState() {
 		Random random = new Random();
 		for(int i = 0; i < this.LENGTH; ++i) {
-			int x = random.nextInt(this.LENGTH);
-			int y = random.nextInt(this.LENGTH);
-			Queen queen = new Queen(x, y);
-			if(this.queens.contains(queen)) {
-				--i;
-				continue;
-			}
-			queens.add(queen);
+			this.state[i] = (byte) random.nextInt(this.LENGTH);
 		}
 	}
 	
-	// TODO
-	public List<Board> getSuccessors(){
-		return null;
+	// Returns a random successor of the current state
+	public Board getSuccessor(){
+		Random random = new Random();
+		Board successor = new Board(this);
+		int column = random.nextInt(this.LENGTH);
+		while(true) {
+			successor.getState()[column] = (byte) random.nextInt(this.LENGTH);
+			if(!this.equals(successor))
+				return successor;
+		}
 	}
 	
 	public void setAttackingQueenPairs() {
 		if(this.attackingPairsSet)
 			return;
 		this.attackingQueenPairs = 0;
-		for(int i = 0; i < this.LENGTH; ++i) {
-			Queen q1 = this.queens.get(i);
-			int x1 = q1.getX();
-			int y1 = q1.getY();
-			for(int j = 0; j < this.LENGTH; ++j) {
-				if(i == j)
-					continue;
-				Queen q2 = this.queens.get(j);
-				int x2 = q2.getX();
-				int y2 = q2.getY();
-				if(x1 == x2 || y1 == y2 || (x1-y1) == (x2-y2) || (x1+y1) == (x2+y2))
-					this.attackingQueenPairs++;
+		for(int i = 0; i < this.LENGTH-1; ++i) {
+			for(int j = i + 1; j < this.LENGTH; ++j) {
+				int difference = Math.abs(this.state[i]-this.state[j]);
+				if(difference == 0 || j-i == difference)
+					++this.attackingQueenPairs;
 			}
 		}
-		this.attackingQueenPairs /= 2;
 		this.attackingPairsSet = true;
 	}
 	
-	public int getAttackingQueenPairs() {
-		if(this.attackingPairsSet)
-			return this.attackingQueenPairs;
-		this.setAttackingQueenPairs();
-		return this.attackingQueenPairs;
-	}
-	
-	public int getLength() {
-		return this.LENGTH;
-	}
-	
-	public List<Queen> getQueens(){
-		return this.queens;
-	}
-	
-	public void setQueens(List<Queen> queens, int bound) {
-		for(int i = 0; i < bound; ++i) {
-			this.queens.add(queens.get(i));
-		}
-	}
-	
-	public void setQueens(List<Queen> queens, int start, int end) {
-		for(int i = start; i < end; ++i) {
-			this.queens.add(queens.get(i));
-		}
-	}
-	
+	// TODO
 	@Override
 	public String toString() {
 		char[][] board = new char[this.LENGTH][this.LENGTH];
 		for(char[] c: board)
 			Arrays.fill(c, ' ');
-		for(Queen q : this.queens) 
-			board[q.getY()][q.getX()] = 'Q';
+//		for(Queen q : this.queens) 
+//			board[q.getY()][q.getX()] = 'Q';
 		String rtn = "";
 		for(char[] c: board) 
 			rtn += Arrays.toString(c);
 		return rtn;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(!obj.getClass().equals(this.getClass()))
+			return false;
+		Board b = (Board) obj;
+		return Arrays.equals(this.state, b.getState());
 	}
 }

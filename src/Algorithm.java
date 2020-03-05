@@ -7,5 +7,5 @@
  *
  */
 public abstract class Algorithm {
-	public abstract void solve(Board board);
+	public abstract Board solve(Board board);
 }

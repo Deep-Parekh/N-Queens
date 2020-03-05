@@ -15,6 +15,7 @@ public class GeneticAlgorithm extends Algorithm {
 	private int popSize;
 	private int GENERATIONS;
 	private int MUTATION_RATE;
+	private int FITTEST;
 
 	public GeneticAlgorithm(int popSize) {
 		this.GENERATIONS = 100;
@@ -28,27 +29,24 @@ public class GeneticAlgorithm extends Algorithm {
 		this.MUTATION_RATE = mut;
 		this.popSize = popSize;
 		this.population = new ArrayList<Board>(this.popSize);
+		this.population.sort(new BoardComparator());
 	}
 	
 	@Override
-	public void solve(Board board) {
+	public Board solve(Board board) {
 		// TODO Auto-generated method stub
 		for(int i = 0; i < GENERATIONS; ++i) {
+			Board fittest = this.population.get(0);
+			if(fittest.isGoal())
+				return fittest;
 			List<Board> newPopulation = new ArrayList<Board>();
 			for(int j = 0; j < popSize; ++j) {
 				newPopulation.add(generateChild());
 			}
+			population = newPopulation;
+			population.sort(new BoardComparator());
 		}
-		
-	}
-	
-	/*
-	 * Returns a random board from the population
-	 */
-	public Board getParent() {
-		Random random = new Random();
-		int index = random.nextInt(popSize);
-		return this.population.get(index);
+		return this.population.get(0);
 	}
 	
 	public Board generateChild() {
@@ -56,13 +54,28 @@ public class GeneticAlgorithm extends Algorithm {
 		Board p2 = getParent();
 		return crossover(p1, p2);
 	}
+
+	/*
+	 * Returns a random board from the population
+	 */
+	public Board getParent() {
+		Random random = new Random();
+		int index = random.nextInt(FITTEST);	//Selects parent from the fittest population
+		return this.population.get(index);
+	}
+	
 	
 	public Board crossover(Board p1, Board p2) {
 		Random random = new Random();
-		int crossoverPoint = random.nextInt(p1.getLength()-1);
-		Board child = new Board(p1.getLength());
-		child.setQueens(p1.getQueens(), crossoverPoint);
-		child.setQueens(p2.getQueens(), crossoverPoint+1, p2.getLength());
+		int crossoverPoint = random.nextInt(p1.getLength()-2) + 1;
+		int length = p1.getLength();
+		Board child = new Board(length);
+		for(int i = 0; i < length; ++i) {
+			if(i < crossoverPoint)
+				child.getState()[i] = p1.getState()[i];
+			else
+				child.getState()[i] = p2.getState()[i];
+		}
 		mutate(child);
 		return child;
 	}
@@ -74,16 +87,8 @@ public class GeneticAlgorithm extends Algorithm {
 		Random random = new Random();
 		int m = random.nextInt(100);
 		int length = child.getLength();
-		if(m < this.MUTATION_RATE) {
-			int mutationindex = random.nextInt(length);
-			Queen queen = child.getQueens().get(mutationindex);
-			int change = random.nextInt(2);
-			if(change == 1)
-				queen.setX(random.nextInt(length));
-			change = random.nextInt(2);
-			if(change == 1)
-				queen.setY(random.nextInt(length));
-		}
+		if(m < this.MUTATION_RATE) 
+			child = child.getSuccessor();
 	}
 
 }
