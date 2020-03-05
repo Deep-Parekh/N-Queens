@@ -12,7 +12,13 @@ public class Board {
 	private byte[] state;
 	private int LENGTH;
 	private int attackingQueenPairs;	
-	private boolean attackingPairsSet;
+	private boolean attackingPairsSet;		// Remove this
+	
+	public Board() {
+		this.LENGTH = 25;
+		this.state = new byte[this.LENGTH];
+		this.attackingPairsSet = false;
+	}
 	
 	/*
 	 * Initializes a new random board
@@ -21,8 +27,7 @@ public class Board {
 		this.LENGTH = N;
 		this.state = new byte[LENGTH];
 		this.attackingPairsSet = false;
-		this.randomState();
-		this.setAttackingQueenPairs();
+		randomState();
 	}
 	
 	/*
@@ -30,9 +35,8 @@ public class Board {
 	 */
 	public Board(Board b) {
 		this.LENGTH = b.getLength();
-		this.state = b.getState();
+		this.state = Arrays.copyOf(b.getState(), this.LENGTH);
 		this.attackingPairsSet = false;
-		this.setAttackingQueenPairs();
 	}
 
 	public int getAttackingQueenPairs() {
@@ -57,9 +61,9 @@ public class Board {
 	 */
 	public void randomState() {
 		Random random = new Random();
-		for(int i = 0; i < this.LENGTH; ++i) {
+		for(int i = 0; i < this.LENGTH; ++i) 
 			this.state[i] = (byte) random.nextInt(this.LENGTH);
-		}
+		this.setAttackingQueenPairs();
 	}
 	
 	// Returns a random successor of the current state
@@ -68,10 +72,13 @@ public class Board {
 		Board successor = new Board(this);
 		int column = random.nextInt(this.LENGTH);
 		while(true) {
-			successor.getState()[column] = (byte) random.nextInt(this.LENGTH);
+			byte[] successorState = successor.getState();
+			successorState[column] = (byte) random.nextInt(this.LENGTH);
 			if(!this.equals(successor))
-				return successor;
+				break;
 		}
+		successor.setAttackingQueenPairs();
+		return successor;
 	}
 	
 	public void setAttackingQueenPairs() {
@@ -91,14 +98,17 @@ public class Board {
 	// TODO
 	@Override
 	public String toString() {
-		char[][] board = new char[this.LENGTH][this.LENGTH];
-		for(char[] c: board)
-			Arrays.fill(c, ' ');
-//		for(Queen q : this.queens) 
-//			board[q.getY()][q.getX()] = 'Q';
-		String rtn = "";
-		for(char[] c: board) 
-			rtn += Arrays.toString(c);
+//		char[][] board = new char[this.LENGTH][this.LENGTH];
+//		for(char[] c: board)
+//			Arrays.fill(c, 'I');
+//		String rtn = "";
+//		for(int i = 0; i < this.LENGTH; ++i)
+//			board[this.state[i]][i] = 'Q';
+//		for(char[] c: board) 
+//			rtn += Arrays.toString(c).replace("[", "").replace("]", "") + "\n";
+		String rtn = Arrays.toString(this.state).replace("[", "").replace("]", "") + "\n";
+		rtn = rtn.replace(",", "");
+		rtn += ("Number of attacking queen pairs: " + this.attackingQueenPairs);
 		return rtn;
 	}
 	
