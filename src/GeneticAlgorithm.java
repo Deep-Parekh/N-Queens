@@ -14,22 +14,22 @@ public class GeneticAlgorithm{
 	
 	private int POPULATION_SIZE;
 	private int GENERATIONS;
-	private int MUTATION_RATE;
-	private int FITTEST;
+	private double MUTATION_RATE;
+	private double FITTEST;
 	private int BOARD_LENGTH;
 
 	public GeneticAlgorithm(int popSize) {
 		this.GENERATIONS = 100;
-		this.MUTATION_RATE = 20;
-		this.FITTEST = 25;
+		this.MUTATION_RATE = 0.20;
+		this.FITTEST = 0.25;
 		this.BOARD_LENGTH = 25;
 		this.POPULATION_SIZE = popSize;
 	}
 	
-	public GeneticAlgorithm(int popSize, int gen, int mut, int fit, int boardLen) {
-		this.GENERATIONS = gen;
-		this.MUTATION_RATE = mut;
-		this.FITTEST = fit;
+	public GeneticAlgorithm(int popSize, int generation, double mutation, double fitness, int boardLen) {
+		this.GENERATIONS = generation;
+		this.MUTATION_RATE = mutation;
+		this.FITTEST = fitness;
 		this.BOARD_LENGTH = boardLen;
 		this.POPULATION_SIZE = popSize;
 	}
@@ -44,22 +44,29 @@ public class GeneticAlgorithm{
 		List<Board> population = new ArrayList<Board>(this.POPULATION_SIZE);
 		initializePopulation(population);
 		population.sort(new BoardComparator());
+		//this.printPopulation(population);
 		Board fittest = population.get(0);
 		for(int i = 0; i < GENERATIONS; ++i) {
-			System.out.println(fittest);
+			//System.out.println("Fittest in population:\n");
+			//System.out.println(fittest);
 			if(fittest.isGoal())
 				break;
 			List<Board> newPopulation = new ArrayList<Board>(this.POPULATION_SIZE);
-			for(int j = 0; j < POPULATION_SIZE; ++j) {
-				newPopulation.add(generateChild(population));
+			for(int j = 0; j < POPULATION_SIZE;) {
+				Board child = generateChild(population);
+				if(!newPopulation.contains(child)) {
+					newPopulation.add(child);
+					++j;
+				}
 			}
 			population = newPopulation;
 			population.sort(new BoardComparator());
+			//this.printPopulation(population);
 			fittest = population.get(0);
 		}
 		long elapsedTime = System.nanoTime() - start;
 		System.out.println("It took " + elapsedTime + " nanoseconds");
-		System.out.println(fittest);
+		//System.out.println(fittest);
 		return fittest;
 	}
 	
@@ -77,15 +84,16 @@ public class GeneticAlgorithm{
 	public Board[] getParents(List<Board> population) {
 		Random random = new Random();
 		Board[] parents = new Board[2];
-		int index = random.nextInt(FITTEST);	//Selects parent from the fittest population
+		int index = random.nextInt((int)(this.POPULATION_SIZE*this.FITTEST));
 		parents[0] = population.get(index);
-		int newIndex = random.nextInt(FITTEST);
+		int newIndex = random.nextInt((int)(this.POPULATION_SIZE*this.FITTEST));
 		while (true) {
-			if(newIndex != index) {
-				parents[1] = population.get(newIndex);
+			Board parent2 = population.get(newIndex);
+			if(!parent2.equals(parents[0])) {
+				parents[1] = parent2;
 				break;
 			}
-			newIndex = random.nextInt(FITTEST);
+			newIndex = random.nextInt((int)(this.POPULATION_SIZE*this.FITTEST));
 		}
 		return parents;
 	}
@@ -95,13 +103,16 @@ public class GeneticAlgorithm{
 		Random random = new Random();
 		int crossoverPoint = random.nextInt(BOARD_LENGTH-2) + 1; 	// Int between 1 and n-1
 		Board child = new Board();
+		byte[] state = child.getState();
+		byte[] parentState1 = p1.getState();
+		byte[] parentState2 = p2.getState();
 		for(int i = 0; i < BOARD_LENGTH; ++i) {
 			if(i < crossoverPoint)
-				child.getState()[i] = p1.getState()[i];
+				state[i] = parentState1[i];
 			else
-				child.getState()[i] = p2.getState()[i];
+				state[i] = parentState2[i];
 		}
-		mutate(child);
+		child = mutate(child);
 		child.setAttackingQueenPairs();
 		return child;
 	}
@@ -109,11 +120,17 @@ public class GeneticAlgorithm{
 	/*
 	 * Mutates a child based on a predefined mutation rate
 	 */
-	public void mutate(Board child) {
+	public Board mutate(Board child) {
 		Random random = new Random();
-		int m = random.nextInt(100);
-		if(m < this.MUTATION_RATE) 
-			child = child.getSuccessor();
+		if(Math.random() < this.MUTATION_RATE) 
+			return child.getSuccessor();
+		return child;
+	}
+	
+	public void printPopulation(List<Board> population) {
+		System.out.println("\nPrinting population: \n");
+		for(Board b: population)
+			System.out.println(b);
 	}
 
 }
