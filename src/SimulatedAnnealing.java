@@ -9,15 +9,15 @@ import java.util.Random;
  *
  */
 public class SimulatedAnnealing {
+	public long iterations;
 
-	public Board solve(Board current) {
-		long start = System.nanoTime();
+	public Board solve(Board current, Schedule schedule) {
 		int time = 0;
 		while(true) {
 			//System.out.println(current);
 			if(current.isGoal())
 				break;
-			double temperature = schedule(time);
+			double temperature = schedule.schedule(time);
 			if(temperature <= 0)
 				break;
 			Board next = current.getSuccessor();
@@ -32,14 +32,8 @@ public class SimulatedAnnealing {
 			}
 			++time;
 		}
-		long elapsedTime = System.nanoTime() - start;
-		System.out.println("It took " + elapsedTime + " nanoseconds with " + time + " iterations");
-		System.out.println(current);
+		iterations += time;
+		//System.out.println(current);
 		return current;
-	}
-
-	// TODO A decay function
-	public double schedule(int t) {
-		return 1-(Math.log(t)/Math.log(10000));
 	}
 }

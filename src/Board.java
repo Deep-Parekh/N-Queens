@@ -98,15 +98,15 @@ public class Board {
 	// TODO
 	@Override
 	public String toString() {
-//		char[][] board = new char[this.LENGTH][this.LENGTH];
-//		for(char[] c: board)
-//			Arrays.fill(c, 'I');
-//		String rtn = "";
-//		for(int i = 0; i < this.LENGTH; ++i)
-//			board[this.state[i]][i] = 'Q';
-//		for(char[] c: board) 
-//			rtn += Arrays.toString(c).replace("[", "").replace("]", "") + "\n";
-		String rtn = Arrays.toString(this.state).replace("[", "").replace("]", "") + "\n";
+		char[][] board = new char[this.LENGTH][this.LENGTH];
+		for(char[] c: board)
+			Arrays.fill(c, '.');
+		String rtn = "";
+		for(int i = 0; i < this.LENGTH; ++i)
+			board[this.state[i]][i] = 'Q';
+		for(char[] c: board) 
+			rtn += Arrays.toString(c).replace("[", "").replace("]", "") + "\n";
+//		String rtn = Arrays.toString(this.state).replace("[", "").replace("]", "") + "\n";
 		rtn = rtn.replace(",", "");
 		rtn += ("Number of attacking queen pairs: " + this.attackingQueenPairs);
 		return rtn;

@@ -12,11 +12,12 @@ import java.util.Random;
  */
 public class GeneticAlgorithm{
 	
-	private int POPULATION_SIZE;
-	private int GENERATIONS;
-	private double MUTATION_RATE;
-	private double FITTEST;
-	private int BOARD_LENGTH;
+	int POPULATION_SIZE;
+	int GENERATIONS;
+	double MUTATION_RATE;
+	double FITTEST;
+	int BOARD_LENGTH;
+	long iterations;
 
 	public GeneticAlgorithm(int popSize) {
 		this.GENERATIONS = 100;
@@ -24,6 +25,7 @@ public class GeneticAlgorithm{
 		this.FITTEST = 0.25;
 		this.BOARD_LENGTH = 25;
 		this.POPULATION_SIZE = popSize;
+		this.iterations = 0;
 	}
 	
 	public GeneticAlgorithm(int popSize, int generation, double mutation, double fitness, int boardLen) {
@@ -32,6 +34,7 @@ public class GeneticAlgorithm{
 		this.FITTEST = fitness;
 		this.BOARD_LENGTH = boardLen;
 		this.POPULATION_SIZE = popSize;
+		this.iterations = 0;
 	}
 	
 	public void initializePopulation(List<Board> population) {
@@ -40,16 +43,16 @@ public class GeneticAlgorithm{
 	}
 	
 	public Board solve() {
-		long start = System.nanoTime();
 		List<Board> population = new ArrayList<Board>(this.POPULATION_SIZE);
 		initializePopulation(population);
 		population.sort(new BoardComparator());
 		//this.printPopulation(population);
 		Board fittest = population.get(0);
-		for(int i = 0; i < GENERATIONS; ++i) {
+		int i;
+		for(i = 0; i < GENERATIONS; ++i) {
 			//System.out.println("Fittest in population:\n");
 			//System.out.println(fittest);
-			if(fittest.isGoal())
+			if(fittest.isGoal()) 
 				break;
 			List<Board> newPopulation = new ArrayList<Board>(this.POPULATION_SIZE);
 			for(int j = 0; j < POPULATION_SIZE;) {
@@ -64,8 +67,7 @@ public class GeneticAlgorithm{
 			//this.printPopulation(population);
 			fittest = population.get(0);
 		}
-		long elapsedTime = System.nanoTime() - start;
-		System.out.println("It took " + elapsedTime + " nanoseconds");
+		iterations += i;
 		//System.out.println(fittest);
 		return fittest;
 	}
